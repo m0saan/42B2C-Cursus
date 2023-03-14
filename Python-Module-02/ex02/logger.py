@@ -16,7 +16,7 @@ def log(func: callable):
             end = time.time()
             exec_time_ms = (end - start) * 1000
             
-            f.write(f'({username}) Running: {func_name :<20} [ exec-time = {exec_time_ms:.2f} ms ]\n')
+            f.write(f'({username}) Running: {func_name :<–20} [ exec-time = {exec_time_ms:.2f} ms ]\n')
     return wrapper
 
 
