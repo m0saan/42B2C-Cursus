@@ -3,7 +3,7 @@ import numpy as np
 
 def data_split(file_path):
     df = pd.read_csv(file_path)
-    X = df.iloc[:, 2:]
+    X = df.iloc[:, 2:].values
     y = df.iloc[:, 1].values
     y = np.where(y == 'M', 1, 0)
     
