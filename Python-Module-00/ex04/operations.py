@@ -32,4 +32,7 @@ if __name__ == '__main__':
         not av[2].replace('.', '', 1).lstrip('-+').isdigit():
         print("AssertionError: only integers")
     else:
-        print(operations(int(av[1]), int(av[2])))
+        try:
+            print(operations(int(av[1]), int(av[2])))
+        except:
+            print("AssertionError: no floats")

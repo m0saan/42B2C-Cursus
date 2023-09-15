@@ -41,6 +41,8 @@ def text_analyzer(s="") -> str:
 if __name__ == '__main__':
     if len(sys.argv) > 2:
         print("AssertionError: more than one argument are provided")
+    elif len(sys.argv) == 1:
+        text_analyzer()
     else:
         text_analyzer(sys.argv[1])
         

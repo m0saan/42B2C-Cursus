@@ -2,10 +2,10 @@ import sys
 
 
 def filter_words(s: str, n: int) -> list:
-    punctuation_marks = "!#$%&'()*+, -./:;<=>?@[\]^_`{|}~"
+    punctuation_marks = "!#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
     for ch in s:
         if ch in punctuation_marks:
-            s = s.replace(",", "")
+            s = s.replace(ch, "")
     words = s.split(" ")
     ls = [word for word in words if len(word) > n and word not in punctuation_marks]
     return ls

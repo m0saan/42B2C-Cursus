@@ -17,7 +17,7 @@ def ft_progress(lst):
     
     print()
 
-listy1 = range(1000)
+listy1 = range(10)
 ret1 = 0
 for elem1 in ft_progress(listy1):
     ret1 += (elem1 + 3) % 5
