@@ -1,0 +1,77 @@
+Given the project description, it appears you are aiming to create a multilayer perceptron (MLP) from scratch, without relying on pre-existing neural network libraries. Below is an outline of how you might structure your code and project files, including a brief overview of the required algorithms and concepts.
+
+### Project Structure:
+
+1. **DataPreparation.py** - A program to separate the dataset into two parts: training and validation.
+2. **TrainModel.py** - A program that implements the MLP, trains it using backpropagation and gradient descent, and saves the model to disk.
+3. **PredictModel.py** - A program that loads the trained model and performs predictions on a new dataset.
+
+#### DataPreparation.py:
+
+- **Input**: CSV or other data file formats.
+- **Output**: Two separate data files or in-memory data structures for training and validation.
+
+You can use libraries like NumPy or Pandas for data manipulation. You can split the data randomly while ensuring a consistent split by using a seed.
+
+#### TrainModel.py:
+
+- **Input**: Training data.
+- **Output**: Trained model parameters (weights and biases).
+
+This program will have the following components:
+- **Initialization**: Randomly initialize weights and biases, possibly using a normal distribution.
+- **Feedforward**: Calculate the output for each layer until the final layer is reached.
+- **Softmax**: Apply the softmax function on the output layer.
+- **Backpropagation**: Compute the gradients of the loss function with respect to each weight and bias by chain rule.
+- **Gradient Descent**: Update the weights and biases in the direction that reduces the loss.
+- **Loss Calculation**: Use cross-entropy loss to calculate the error.
+- **Saving Model**: Save the model parameters after training is complete.
+
+#### PredictModel.py:
+
+- **Input**: Model parameters and new data for prediction.
+- **Output**: Predictions and error using binary cross-entropy.
+
+This program will load the model parameters and run a feedforward pass on new data to make predictions. The binary cross-entropy error will be calculated to evaluate the performance of the model.
+
+### Key Concepts:
+
+- **Feedforward**: The process of moving the input data through the layers of the network to arrive at the output.
+- **Backpropagation**: The method used to calculate the gradient of the loss function with respect to the weights of the network.
+- **Gradient Descent**: An optimization algorithm used to minimize the loss function by updating the weights in the direction that decreases the loss.
+
+### Learning Curves:
+
+For visualizing the learning curves, you can use Matplotlib or any other plotting library. You would typically plot the training loss and validation loss over the epochs.
+
+### Model Save and Load:
+
+You can use the `numpy.save` method to save your model parameters and `numpy.load` to load them.
+
+### Command Line Interface (CLI):
+
+Consider using Python's `argparse` module to handle CLI arguments. It can help you switch between data preparation, training, and prediction phases.
+
+### Makefile (if using a compiled language):
+
+If you decide to use a compiled language like C++:
+- Your Makefile should include rules for compiling the source code, linking objects, and cleaning build files.
+- Include a target to install any necessary dependencies, like a linear algebra library.
+
+### Randomness and Reproducibility:
+
+Make sure to use a seed where necessary to ensure that your results are reproducible, especially during weight initialization and data splitting.
+
+### Coding Best Practices:
+
+- Use clear naming conventions.
+- Write modular code with functions/classes to handle different aspects of the network.
+- Include comments and documentation for each part of the code.
+- Test individual components before integrating them.
+
+### Testing:
+
+- Create a small synthetic dataset to test the correctness of your implementation before moving to more complex datasets.
+- Verify the gradient computation using numerical gradient checking.
+
+By adhering to these guidelines, you should be able to create a MLP from scratch that can be trained, evaluated, and used for predictions.

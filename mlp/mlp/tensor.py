@@ -1,60 +1,16 @@
-from typing import (
-    List,
-    Optional,
-    Tuple,
-    Union,
-    Set,
-)
+__all__ = ['Tensor', 'EWiseAdd', 'add', 'AddScalar', 'add_scalar', 'EWiseMul', 'multiply', 'MulScalar', 'mul_scalar', 'EWiseDiv', 'divide',
+           'DivScalar', 'divide_scalar', 'Negate', 'negate', 'Exp', 'exp', 'ReLU', 'relu', 'PowerScalar',
+           'power_scalar', 'Transpose', 'transpose', 'Reshape', 'reshape', 'MatMul', 'matmul', 'Summation', 'summation',
+           'BroadcastTo', 'broadcast_to', 'LogSumExp', 'logsumexp']
 
+from typing import List, Optional, Tuple, Union, Set, Dict
+from typing import Optional, List
 import numpy
 import numpy as ARRAY_API
-numpy.set_printoptions(precision=6, linewidth=160)
 
 NDArray = numpy.ndarray
 LAZY_MODE = False
 TENSOR_COUNTER = 0
-
-class Device:
-    """Indicates the device supporting an NDArray."""
-
-
-class CPUDevice(Device):
-    """Represents data that sits in CPU"""
-
-    def __repr__(self):
-        return "minima.cpu()"
-
-    def __hash__(self):
-        return self.__repr__().__hash__()
-
-    def __eq__(self, other):
-        return isinstance(other, CPUDevice)
-
-    def enabled(self):
-        return True
-    
-    def zeros(self, *shape, dtype="float32"):
-        return numpy.zeros(shape, dtype=dtype)
-
-    def ones(self, *shape, dtype="float32"):
-        return numpy.ones(shape, dtype=dtype)
-
-    def randn(self, *shape):
-        return numpy.random.randn(*shape) 
-
-    def rand(self, *shape):
-        return numpy.random.rand(*shape)
-
-    def one_hot(self, n, i, dtype="float32"):
-        return numpy.eye(n, dtype=dtype)[i]
-
-def cpu():
-    """Return cpu device"""
-    return CPUDevice()
-
-def all_devices():
-    """return a list of all available devices"""
-    return [cpu()]
 
 class Operator:
     def __call__(self, *args):
@@ -97,24 +53,20 @@ class Tensor(Value):
     """
     A Tensor represents a multidimensional array of values in a computational graph.
     """
-    
 
-    def __init__( self, array, *, device: Optional[Device] = None, dtype=None, requires_grad=True, **kwargs):    
+    def __init__( self, array, *, dtype=None, requires_grad=True, **kwargs):    
         if isinstance(array, Tensor):
-            if device is None:
-                device = array.device
             if dtype is None:
                 dtype = array.dtype
-            if device == array.device and dtype == array.dtype:
+            if dtype == array.dtype:
                 data = array.compute_cached_data()
             else:
                 # fall back, copy through numpy conversion
                 data = Tensor._array_from_numpy(
-                    array.numpy(), device=device, dtype=dtype
+                    array.numpy(), dtype=dtype
                 )
         else:
-            device = device if device else cpu()
-            data = Tensor._array_from_numpy(array, device=device, dtype=dtype)
+            data = Tensor._array_from_numpy(array, dtype=dtype)
 
         self._init(None, (), data=data, requires_grad=requires_grad, )
         
@@ -147,11 +99,11 @@ class Tensor(Value):
         self.grad: 'Tensor'
     
     @staticmethod
-    def _array_from_numpy(numpy_array, device, dtype):
+    def _array_from_numpy(numpy_array, dtype):
 
         if ARRAY_API is numpy:
             return numpy.array(numpy_array, dtype=dtype)
-        return ARRAY_API.array(numpy_array, device=device, dtype=dtype)
+        return ARRAY_API.array(numpy_array, dtype=dtype)
     
     @staticmethod
     def make_from_op(op: Operator, children: Tuple["Value"]):
@@ -196,7 +148,6 @@ class Tensor(Value):
         )
         self.cached_data = value.compute_cached_data()
 
-    
     @property
     def shape(self):
         return self.compute_cached_data().shape
@@ -204,12 +155,6 @@ class Tensor(Value):
     @property
     def dtype(self):
         return self.compute_cached_data().dtype
-    
-    @property
-    def device(self):
-        data = self.compute_cached_data()
-        if ARRAY_API is numpy: return cpu()
-        return data.device
     
     def backward(self, out_grad: Optional['Tensor']=None) -> None:
         self.grad = out_grad if out_grad is not None else Tensor(ARRAY_API.ones(self.shape))
@@ -228,8 +173,7 @@ class Tensor(Value):
             Returns:
                 A list of all nodes in the graph sorted in topological order.
             """
-            
-            
+
             visited = set()
             reverse_topo_order = []
 
@@ -372,19 +316,12 @@ class Tensor(Value):
     __rmatmul__ = __matmul__
 
 
-
-from numbers import Number
-from typing import Optional, List
-from typing import NamedTuple
-import numpy
-
 class EWiseAdd(TensorOp):    
     def compute(self, a, b): return a + b
     def gradient(self, out_grad, node): return (out_grad, out_grad)
 
 def add(a, b): return EWiseAdd()(a, b)
 
-# %% ../nbs/01_operators.ipynb 23
 class AddScalar(TensorOp):
     def __init__(self, scalar: Union[int, float]):
         self.scalar = scalar
@@ -422,7 +359,6 @@ class MulScalar(TensorOp):
 def mul_scalar(a: Tensor, scalar: Union[int, float]) -> Tensor:
     return MulScalar(scalar)(a)
 
-# %% ../nbs/01_operators.ipynb 32
 class EWiseDiv(TensorOp):
     def compute(self, a: NDArray, b: NDArray) -> NDArray:
         return a / b
@@ -448,7 +384,6 @@ class DivScalar(TensorOp):
 def divide_scalar(a: Tensor, scalar: Union[int, float]) -> Tensor:
     return DivScalar(scalar)(a)
 
-# %% ../nbs/01_operators.ipynb 38
 class Negate(TensorOp):
     
     def compute(self, a: NDArray) -> NDArray:
@@ -461,7 +396,6 @@ class Negate(TensorOp):
 def negate(a: Tensor) -> Tensor:
     return Negate()(a)
 
-# %% ../nbs/01_operators.ipynb 41
 class Exp(TensorOp):
     
     def compute(self, a: NDArray) -> NDArray:
@@ -474,7 +408,6 @@ class Exp(TensorOp):
 def exp(a: Tensor) -> Tensor:
     return Exp()(a)
 
-# %% ../nbs/01_operators.ipynb 44
 class ReLU(TensorOp):
     
     def compute(self, a: NDArray) -> NDArray:
@@ -504,7 +437,6 @@ class PowerScalar(TensorOp):
 def power_scalar(a: Tensor, scalar: int) -> Tensor:
     return PowerScalar(scalar)(a)
 
-# %% ../nbs/01_operators.ipynb 53
 class Transpose(TensorOp):
     def __init__(self, axes: Optional[tuple] = None):
         self.axes = axes
@@ -522,7 +454,6 @@ class Transpose(TensorOp):
 def transpose(a: Tensor, axes: Optional[tuple] = None) -> Tensor:
     return Transpose(axes)(a)
 
-
 class Reshape(TensorOp):
     def __init__(self, shape: Tuple[int, ...]):
         self.shape = shape
@@ -537,8 +468,6 @@ class Reshape(TensorOp):
 def reshape(a: Tensor, shape: Tuple[int, ...]) -> Tensor:
     return Reshape(shape)(a)
 
-
-# %% ../nbs/01_operators.ipynb 67
 class MatMul(TensorOp):    
     
     def compute(self, a: NDArray, b: NDArray) -> NDArray:
@@ -610,8 +539,6 @@ class Summation(TensorOp):
 def summation(a: Tensor, axes: Optional[tuple] = None) -> Tensor:
     return Summation(axes)(a)
 
-
-# %% ../nbs/01_operators.ipynb 89
 class BroadcastTo(TensorOp):
     def __init__(self, shape):
         self.shape = shape

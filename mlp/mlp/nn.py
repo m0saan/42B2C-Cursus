@@ -1,10 +1,10 @@
-__all__ = ['Module', 'Linear', 'ReLU', 'CrossEntropyLoss', 'Softmax', 'SGD', 'Dataset', 'DataLoader']
+__all__ = ['Module', 'Linear', 'ReLU', 'CrossEntropyLoss', 'Softmax', 'Dataset', 'DataLoader' ,'SGD']
 
-from tensor import *
-import fastcore.all as fc
-import random
-import math
+from .tensor import *
 import numpy as np
+import math
+from random import random
+import pickle
 
 class Parameter(Tensor):
     """
@@ -41,7 +41,10 @@ def _child_modules(value: object):
         return [item for v in value for item in _child_modules(v)]
     else:
         return []
-    
+
+def zeros(*shape):
+    return Tensor(np.zeros(shape))
+
 def kaiming_uniform(fan_in, fan_out):
     """
     Fills the input Tensor with values according to the method described in
@@ -65,8 +68,6 @@ def kaiming_uniform(fan_in, fan_out):
     std = gain * math.sqrt(3/fan_in)
     return rand(fan_in, fan_out, low=-std, high=std)
 
-def zeros(*shape):
-    return Tensor(np.zeros(shape))
 
 class Module:
     
@@ -74,7 +75,21 @@ class Module:
         self.training = True
 
     def parameters(self): return _unpack_params(self.__dict__)
+    
+    def load_weights(self, path):
+        with open(path, 'rb') as file:
+            loaded_params = pickle.load(file)
+        
+        for new_p, old_p in zip(loaded_params, self.parameters()):
+            old_p.data = new_p.data
+            
+    def save_weights(self, path):
 
+        # Now you can use pickle to save this dictionary to a file
+        with open('model_params.pkl', 'wb') as file:
+            pickle.dump(self.parameters(), file)
+        
+        
     def _children(self): return _child_modules(self.__dict__)
     
     def extra_repr(self) -> str: return ''
@@ -197,43 +212,15 @@ class Softmax(Module):
         exps_sum = summation(exps, axes=(1,))
         return exps / broadcast_to(reshape(exps_sum, shape=exps_sum.shape + (1,)), shape=exps.shape)
 
-class Sampler:
-    def __init__(self, ds, shuffle=False):
-        self.n = len(ds)
-        self.shuffle = shuffle
-
-    def __iter__(self):
-        res = list(range(self.n))
-        if self.shuffle: random.shuffle(res)
-        return iter(res)
-
-class BatchSampler:
-    def __init__(self, sampler: Sampler, bs: int, drop_last: bool = False):
-        self.sampler = sampler
-        self.bs = bs
-        self.drop_last = drop_last
-
-    def __iter__(self):
-        yield from fc.chunked(iter(self.sampler), self.bs, drop_last=self.drop_last)
-
-
 class Dataset():
     def __getitem__(self, index): raise NotImplementedError
     def __len__(self):raise NotImplementedError
 
-class DataLoader:
-    def __init__(self, dataset: Dataset, batch_size: int = 1, shuffle: bool = True,):
-        self.dataset = dataset
-        self.batch_size = batch_size
-        self.shuffle = shuffle
-        self.sampler =  Sampler(dataset, shuffle)
-        self.batch_sampler = BatchSampler(self.sampler, batch_size, False)
-
+class DataLoader():
+    def __init__(self, ds, batch_size): self.ds,self.bs = ds,batch_size
     def __iter__(self):
-        yield from (self.dataset[batch_idxs] for batch_idxs in self.batch_sampler)
+        for i in range(0, len(self.ds), self.bs): yield self.ds[i:i+self.bs]
 
-
-    
 class Optimizer:
     def __init__( self, params ): self.params = params
     def step(self): raise NotImplementedError()
@@ -242,6 +229,24 @@ class Optimizer:
             p.grad = None
 
 class SGD(Optimizer):
+    def __init__(
+        self,
+        params, # The parameters of the model to be optimized.
+        lr=0.01, # The learning rate.
+    ):
+        super().__init__(params)
+        self.lr = lr
+
+    def step(self):
+        for self.idx, p in enumerate(self.params):
+            self._opt_step(p)
+
+    def _opt_step(self, p):
+        grad = Tensor(p.grad, dtype='float32')
+        p.data = p.data - grad * self.lr
+            
+            
+class SGDMomentum(Optimizer):
     def __init__(
         self,
         params, # The parameters of the model to be optimized.
