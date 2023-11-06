@@ -1,8 +1,6 @@
 from data_prep import data_split_normalize
-from mlp.tensor import Tensor
 from tqdm import tqdm
-from IPython.display import display
-import IPython.display as ipd
+from mlp.tensor import Tensor
 import matplotlib.pyplot as plt
 import mlp.nn as nn
 from common_nn import NeuralNetwork, MyDataset
@@ -13,8 +11,6 @@ def fit(epochs, lr, model, loss_func, opt_fn, train_dl, valid_dl, patience=10, u
     best_val_loss = float('inf')
     counter_early_stop = 0
     early_stop = False
-    # fig, axs = plt.subplots(1, 1, figsize=(14, 7))
-    # p = display(fig,display_id=True)
 
     opt = opt_fn(model.parameters(), lr=lr)
     
@@ -124,27 +120,27 @@ if __name__ == "__main__":
     tr_dl = nn.DataLoader(tr_ds, batch_size=bs)
     val_dl = nn.DataLoader(val_ds, batch_size=bs)
 
-    lr = 0.05
+    lr = 0.005
     n_epochs = 25
     recorder = fit(n_epochs, lr, model, nn.CrossEntropyLoss(), nn.SGD, tr_dl, val_dl)
 
-    ## plt.figure(figsize=(10, 7))
-    # plt.plot(recorder['tr_loss'], label='Training Loss')
-    # plt.plot(recorder['val_loss'], label='Validation Loss', linestyle='--')
-    # plt.xlabel('Iterations')
-    # plt.ylabel('Loss')
-    # plt.legend()
-    # plt.title('Loss Curve')
-    # plt.show()
-
     # plt.figure(figsize=(10, 7))
-    # plt.plot(recorder['tr_acc'], label='Training Accuracy')
-    # plt.plot(recorder['val_acc'], label='Validation Accuracy')
-    # plt.xlabel('Iterations')
-    # plt.ylabel('Accuracy')
-    # plt.legend()
-    # plt.title('Accuracy Curve')
-    # plt.show()
+    plt.plot(recorder['tr_loss'], label='Training Loss')
+    plt.plot(recorder['val_loss'], label='Validation Loss', linestyle='--')
+    plt.xlabel('Iterations')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.title('Loss Curve')
+    plt.show()
+
+    plt.figure(figsize=(10, 7))
+    plt.plot(recorder['tr_acc'], label='Training Accuracy')
+    plt.plot(recorder['val_acc'], label='Validation Accuracy')
+    plt.xlabel('Iterations')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.title('Accuracy Curve')
+    plt.show()
 
     # Save the model weights
     model.save_weights(path='model_params.pkl')

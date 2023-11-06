@@ -1,13 +1,5 @@
-from functools import partial
-from data_prep import data_split_normalize
 from mlp.tensor import Tensor
-from tqdm import tqdm
-from IPython.display import display
-import IPython.display as ipd
-import matplotlib.pyplot as plt
-import numpy as np
 import mlp.nn as nn
-
 
 class NeuralNetwork(nn.Module):
     def __init__(self, input_shape, output_shape):
@@ -23,7 +15,6 @@ class NeuralNetwork(nn.Module):
         x = self.relu(self.dense1(x))
         x = self.relu(self.dense2(x))
         x = self.relu(self.dense3(x))
-        # print(self.dense4(x))
         x = self.dense4(x)
         return x
 

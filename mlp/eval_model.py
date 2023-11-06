@@ -1,17 +1,14 @@
 import numpy as np
-import pandas as pd
-from common_nn import NeuralNetwork, MyDataset
+from common_nn import NeuralNetwork
 from data_prep import data_split_normalize
 from mlp.tensor import Tensor
 import mlp.nn as nn
-import torch.nn as tnn
-import torch
 
 def binary_cross_entropy(predictions, y_true):
     y_true = y_true.numpy()
     predictions = nn.Softmax()(predictions).numpy().max(axis=1)
     epsilon = 1e-15  # to avoid log(0) error
-    predictions = np.clip(predictions, epsilon, 1 - epsilon)  # Clip predictions for stability
+    predictions = np.clip(predictions, epsilon, 1 - epsilon)
     return -np.mean(y_true * np.log(predictions) + (1 - y_true) * np.log(1 - predictions))
 
 

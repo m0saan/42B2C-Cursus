@@ -71,10 +71,10 @@ class Tensor(Value):
         self._init(None, (), data=data, requires_grad=requires_grad, )
         
     def __repr__(self):
-        return "mi.Tensor(" + str(self.compute_cached_data()) + ")"
+        return "m0san.Tensor(" + str(self.compute_cached_data()) + ")"
 
     def __str__(self):
-        return "mi.Tensor(" + self.compute_cached_data().__str__() + ")"
+        return "m0san.Tensor(" + self.compute_cached_data().__str__() + ")"
 
     def __len__(self) -> int:
         return len(self.cached_data)
