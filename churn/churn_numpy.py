@@ -81,10 +81,10 @@ tr_ds = MyDataset(X_tr, y_tr)
 val_ds = MyDataset(X_val, y_val)
 
 # Creating the data loader
-bs = 256
+bs = 512
 tr_dl = nnx.DataLoader(tr_ds, batch_size=bs)
 val_dl = nnx.DataLoader(val_ds, batch_size=bs)
 
-lr = 0.0005
-n_epochs = 10
+lr = 0.001
+n_epochs = 20
 recorder = fit(n_epochs, lr, model, nnx.CrossEntropyLoss(), nnx.SGD, tr_dl, val_dl)
