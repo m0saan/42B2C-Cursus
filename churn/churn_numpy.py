@@ -20,7 +20,6 @@ class NeuralNetwork(nnx.Module):
         x = self.dense4(x)
         return x
 
-# Custom Dataset class
 class MyDataset(nnx.Dataset):
     def __init__(self, X, y):
         self.X = Tensor(X)
@@ -68,19 +67,27 @@ import torch
 
 with open(ds_path, 'rb') as f:
     X_tr, y_tr, X_val, y_val = pickle.load(f)
+
 y_tr = y_tr[:, 0]
 y_val = y_val[:, 0]
 
-# Create the neural network
-input_shape = X_tr.shape[1]  # Replace with the actual input shape
-output_shape = 2  # Replace with the actual output shape
+X_tr_np = X_tr.numpy()
+X_vl_np = X_val.numpy()
+
+X_mean = X_tr_np.mean(axis=0)
+X_std = X_tr_np.std(axis=0)
+
+X_tr = Tensor((X_tr_np - X_mean) / X_std)
+X_val = Tensor((X_vl_np - X_mean) / X_std)
+
+input_shape = X_tr.shape[1]
+output_shape = 2
 
 model = NeuralNetwork(input_shape, output_shape)
 
 tr_ds = MyDataset(X_tr, y_tr)
 val_ds = MyDataset(X_val, y_val)
 
-# Creating the data loader
 bs = 512
 tr_dl = nnx.DataLoader(tr_ds, batch_size=bs)
 val_dl = nnx.DataLoader(val_ds, batch_size=bs)
